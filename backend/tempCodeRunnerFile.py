@@ -1,0 +1,1 @@
+https://image.documents.azure.com:443/

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cloud Image Gallery</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <h1>Azure Cloud Image Gallery</h1>
+
+  <div class="card">
+    <input type="file" id="image">
+    <input type="text" id="title" placeholder="Image Title">
+    <input type="text" id="tags" placeholder="Tags (comma separated)">
+    <button onclick="upload()">Upload Image</button>
+  </div>
+
+  <div class="gallery" id="gallery"></div>
+</div>
+
+<script>
+function loadImages(){
+    fetch("http://127.0.0.1:5000/images")
+    .then(r => r.json())
+    .then(list => {
+        const g = document.getElementById("gallery");
+        g.innerHTML = "";
+        list.forEach(i=>{
+            g.innerHTML += `
+                <div class="image-card">
+                    <img src="${i.url}">
+                    <h4>${i.title}</h4>
+                    <p>${i.tags}</p>
+                </div>`;
+        });
+    });
+}
+
+window.onload = loadImages;
+
+
+
+function upload(){
+    const f = document.getElementById("image").files[0];
+    if(!f){
+        alert("Choose image");
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append("image", f);
+    fd.append("title", document.getElementById("title").value);
+    fd.append("tags", document.getElementById("tags").value);
+
+    fetch("http://127.0.0.1:5000/upload", {   // 🔴 THIS LINE FIXES EVERYTHING
+        method: "POST",
+        body: fd
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.msg);
+        loadImages();
+    })
+    .catch(err => alert("Upload failed: " + err));
+}
+
+function loadImages(){
+    fetch("http://127.0.0.1:5000/images")
+    .then(res => res.json())
+    .then(data => {
+        const g = document.getElementById("gallery");
+        g.innerHTML = ""; // clear old images
+
+        data.forEach(img => {
+            g.innerHTML += `
+              <div class="image-card">
+                <img src="${img.url}">
+                <h4>${img.title}</h4>
+                <p>${img.tags}</p>
+
+                <a href="${img.url}" download target="_blank">
+                    <button class="download-btn">Download</button>
+                </a>
+              </div>
+            `;
+        });
+    });
+}
+
+
+
+
+loadImages();
+</script>
+
+
+</body>
+</html>
